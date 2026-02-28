@@ -339,4 +339,3 @@ Deploy the JAR to any Java container or run directly. Ensure environment variabl
 - BCrypt hashes are **one-way** — impossible to reverse. Always regenerate via `TestHash.java` if a password is lost.
 - Redis **must be running** before starting Spring Boot, otherwise the application will crash on startup.
 
-Happy coding! 👩‍💻👨‍💻
