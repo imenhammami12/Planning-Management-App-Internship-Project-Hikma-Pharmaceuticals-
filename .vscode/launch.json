@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "TestHash",
+            "request": "launch",
+            "mainClass": "com.example.hikmaproject.TestHash",
+            "projectName": "hikmaproject"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-HikmaprojectApplication<hikmaproject>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.hikmaproject.HikmaprojectApplication",
+            "projectName": "hikmaproject",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=57613 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=hikmaproject"
+        }
+    ]
+}
