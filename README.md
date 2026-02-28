@@ -14,7 +14,7 @@ This module implements the backend API for the MRPVAL system using Spring Boot, 
 - User management (create, update, activate/deactivate)
 - CRUD operations for business entities (BOM, CDE, Stock, Pdp, etc.)
 - Redis caching and SQL Server persistence
-- Audit logging using aspect-oriented programming
+- Audit logging using aspect-oriented  programming
 
 ---
 
