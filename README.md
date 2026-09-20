@@ -22,6 +22,7 @@ Final Year Project (PFE) for the Bachelor's Degree in **Applied Computer Science
 - [Tech Stack](#-tech-stack)
 - [Screenshots](#-screenshots)
 - [Getting Started](#-getting-started)
+- [Performance Testing](#-performance-testing-apache-jmeter)
 - [User Roles](#-user-roles)
 - [Project Structure](#-project-structure)
 - [Future Improvements](#-future-improvements)
@@ -91,7 +92,7 @@ A centralized web application, **Planning Management**, designed to:
 └─────────────┘     └──────────────────────┘     └──────────┬────────────┘
                                                             │
                                                             ▼
-┌─────────────┐     REST API      ┌───────────────────────────────────────┐
+┌─────────────┐    GraphQL API    ┌───────────────────────────────────────┐
 │   Angular   │ ◀───────────────▶ │           Spring Boot                 │
 │  (Frontend) │                   │  Auth · Planning · BOM · Stock · AI   │
 └──────┬──────┘                   └───────────────────────────────────────┘
@@ -108,10 +109,10 @@ A centralized web application, **Planning Management**, designed to:
 | Layer | Technologies |
 |-------|--------------|
 | Frontend | Angular |
-| Backend | Spring Boot (Java) |
+| Backend | Spring Boot (Java), GraphQL API |
 | Data & BI | Sage data warehouse, stored procedures, Power BI |
 | AI | AI-powered inventory analysis and recommendations |
-| Tools | VS Code, Visual Studio, Draw.io (UML) |
+| Tools | VS Code, Visual Studio, Draw.io (UML), Apache JMeter (load testing) |
 
 ## 🖼️ Screenshots
 
@@ -152,7 +153,7 @@ cd <your-repo>
 ### 2. Backend (Spring Boot)
 
 ```bash
-cd backend
+cd Springboot
 # Configure src/main/resources/application.properties (DB, mail, AI key...)
 mvn clean install
 mvn spring-boot:run
@@ -161,7 +162,7 @@ mvn spring-boot:run
 ### 3. Frontend (Angular)
 
 ```bash
-cd frontend
+cd Angular
 npm install
 ng serve
 ```
@@ -184,6 +185,50 @@ spring.mail.password=<password>
 ai.api.key=<your-ai-api-key>
 ```
 
+## ⚡ Performance Testing (Apache JMeter)
+
+Load tests were run with **Apache JMeter 5.6.3** against the GraphQL API to measure response times and check stability under concurrent load.
+
+**Scenario:** login → add a production plan → update all monthly needs (`UpdateAllBesoinMois…`) → AI analysis (`AnalysisResult`).
+
+> Tests were run on a local development environment: **[add your machine specs / environment here]**. Results will differ on a production server.
+
+### Test runs
+
+| Run | Threads | Total samples | Duration | Avg (ms) | Median (ms) | 95% line (ms) | Errors |
+|-----|:-------:|:-------------:|:--------:|:--------:|:-----------:|:-------------:|:------:|
+| Smoke test | 1 | 3 | 2 s | 68 | 59 | 145 | 0.00% |
+| Load test #1 | 100 | 500 | 1 min 21 s | 9,125 | 2,282 | 30,954 | 0.00% |
+| Load test #2 | 100 | 1,000 | 4 min 12 s | 26,864 | 1,964 | 229,249 | 0.00% |
+
+### Response time per request (ms)
+
+| Request | #1 Avg | #1 95% | #1 Max | #2 Avg | #2 95% | #2 Max |
+|---------|-------:|-------:|-------:|-------:|-------:|-------:|
+| GraphQL Login | 2,570 | 4,743 | 4,933 | 2,530 | 4,467 | 4,933 |
+| GraphQL AddPlan | 9,927 | 30,078 | 30,302 | 15,319 | 30,134 | 229,263 |
+| UpdateAllBesoinMois | 33,117 | 49,357 | 52,016 | 116,441 | 230,846 | 238,580 |
+| AnalysisResult | 9 | 15 | 46 | 31 | 251 | 317 |
+
+*#1 = 100 samples per request, #2 = 200 samples per request.*
+
+### Key findings
+
+- ✅ **0% error rate** across all runs: the application stayed stable under load.
+- ✅ **Login** stays consistent between runs (about 2.5 s average, 4.9 s maximum).
+- ⚠️ **`UpdateAllBesoinMois` is the main bottleneck**: the bulk update of monthly needs averages 33 s in load test #1 and 116 s in load test #2, so its response time grows much faster than the load.
+- ⚠️ **`AddPlan`** shows the same trend on its slowest requests (95th percentile above 30 s).
+
+### Screenshots
+
+| Smoke test | Load test #1 (100 samples/request) |
+|:---:|:---:|
+| ![JMeter smoke test](docs/screenshots/jmeter-smoke-test.png) | ![JMeter load test 1](docs/screenshots/jmeter-100-samples.png) |
+
+| Load test #2 (200 samples/request) | Graph results |
+|:---:|:---:|
+| ![JMeter load test 2](docs/screenshots/jmeter-200-samples.png) | ![JMeter graph](docs/screenshots/jmeter-graph.png) |
+
 ## 👥 User Roles
 
 | Role | Permissions |
@@ -196,22 +241,24 @@ ai.api.key=<your-ai-api-key>
 
 ```
 .
-├── backend/           # Spring Boot REST API
-├── frontend/          # Angular application
+├── Springboot/        # Spring Boot GraphQL API
+├── Angular/           # Angular application
 ├── docs/
 │   └── screenshots/   # Screenshots used in this README
 └── README.md
 ```
 
-> Adjust to match your actual repository layout.
-
 ## 🔮 Future Improvements
 
+- Optimize the bulk monthly-needs update (batching, asynchronous processing, query tuning), identified as the main bottleneck by the JMeter load tests
 - Predictive stock and demand forecasting
 - Automated alerts by email/SMS for critical stock levels
 - Multi-site support
 - Direct, scheduled synchronization with the data warehouse
 
+
+**Developed by**
+- Imen Hammami
 
 **Supervised by**
 - Sinda Ben Fadhel Azza
